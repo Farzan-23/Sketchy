@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-3 text-center">Sketchy – Login</h3>
+                <p class="text-muted small text-center mb-4">
+                    Please sign in to access the Sketchy facial recognition interface.
+                </p>
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="username"
+                            name="username"
+                            required
+                            autofocus
+                        >
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="password"
+                            name="password"
+                            required
+                        >
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        Log In
+                    </button>
+                </form>
+                <p class="small text-muted mt-3 mb-0 text-center">
+                    Demo credentials (for preview only):<br>
+                    <strong>Username:</strong> admin &nbsp; | &nbsp;
+                    <strong>Password:</strong> sketchy123
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
