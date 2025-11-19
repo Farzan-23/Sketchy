@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from functools import wraps
 
 from flask import (
@@ -11,17 +12,16 @@ from flask import (
     session,
 )
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # App setup
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Secret key for sessions (use env var in production)
+# Secret key for sessions
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 
 # Upload directories
@@ -35,17 +35,42 @@ os.makedirs(VIDEO_UPLOAD_DIR, exist_ok=True)
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
 ALLOWED_VIDEO_EXTENSIONS = {"mp4", "avi", "mov", "mkv"}
 
-# -----------------------------------------------------------------------------
-# Simple login config (demo only)
-# -----------------------------------------------------------------------------
-# In real production, you'd use a database and hashed passwords.
-LOGIN_USERNAME = "admin"
-LOGIN_PASSWORD = "sketchy123"  # change this for your demo
+# SQLite database for users
+DATABASE = os.path.join(BASE_DIR, "users.db")
 
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# DB helpers
+# ---------------------------------------------------------------------
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    """Create users table if it doesn't exist."""
+    conn = get_db()
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        );
+        """
+    )
+    conn.commit()
+    conn.close()
+
+
+# Initialize DB at startup
+init_db()
+
+
+# ---------------------------------------------------------------------
+# Utility helpers
+# ---------------------------------------------------------------------
 def allowed_file(filename: str, allowed_exts) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_exts
 
@@ -56,28 +81,82 @@ def login_required(view_func):
     """
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
-        if not session.get("logged_in"):
+        if not session.get("user_id"):
             return redirect(url_for("login"))
         return view_func(*args, **kwargs)
     return wrapped_view
 
 
-# -----------------------------------------------------------------------------
-# Authentication routes
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Auth routes: register, login, logout
+# ---------------------------------------------------------------------
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """
+    Allow new users to create an account.
+    """
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        confirm = request.form.get("confirm_password", "").strip()
+
+        if not username or not password or not confirm:
+            flash("Please fill in all fields.", "warning")
+            return redirect(url_for("register"))
+
+        if password != confirm:
+            flash("Passwords do not match.", "warning")
+            return redirect(url_for("register"))
+
+        # Basic length check
+        if len(username) < 3:
+            flash("Username must be at least 3 characters.", "warning")
+            return redirect(url_for("register"))
+
+        conn = get_db()
+        existing = conn.execute(
+            "SELECT id FROM users WHERE username = ?",
+            (username,),
+        ).fetchone()
+
+        if existing:
+            conn.close()
+            flash("Username is already taken. Please choose another.", "warning")
+            return redirect(url_for("register"))
+
+        password_hash = generate_password_hash(password)
+        conn.execute(
+            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+            (username, password_hash),
+        )
+        conn.commit()
+        conn.close()
+
+        flash("Account created successfully. Please log in.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """
-    Simple login page for Sketchy.
-    Demo credentials: admin / sketchy123
+    Log a user in using username/password from the SQLite DB.
     """
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
 
-        if username == LOGIN_USERNAME and password == LOGIN_PASSWORD:
-            session["logged_in"] = True
-            session["username"] = username
+        conn = get_db()
+        user = conn.execute(
+            "SELECT * FROM users WHERE username = ?",
+            (username,),
+        ).fetchone()
+        conn.close()
+
+        if user and check_password_hash(user["password_hash"], password):
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
             flash("Logged in successfully.", "success")
             return redirect(url_for("index"))
         else:
@@ -87,6 +166,7 @@ def login():
 
 
 @app.route("/logout")
+@login_required
 def logout():
     """
     Log out current user and clear session.
@@ -96,9 +176,9 @@ def logout():
     return redirect(url_for("login"))
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Core UI routes (protected)
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 @app.route("/")
 @login_required
 def index():
@@ -184,10 +264,9 @@ def search_video():
     )
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Entry point
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 if __name__ == "__main__":
     # Local development server.
-    # Others on the same network can access with: http://YOUR_IP:5000
     app.run(host="0.0.0.0", port=5000, debug=True)

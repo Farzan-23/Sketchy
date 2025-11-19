@@ -1,18 +1,52 @@
-body {
-    background-color: #f5f6fa;
+body.sketchy-bg {
+    background: radial-gradient(circle at top left, #1f2937, #020617 55%);
+    color: #0f172a;
 }
 
-.card {
-    border-radius: 0.75rem;
+.sketchy-navbar {
+    background: linear-gradient(90deg, #111827, #1f2937);
 }
 
-.navbar-brand {
+.sketchy-footer {
+    background-color: #020617;
+    color: #9ca3af;
+}
+
+.sketchy-card {
+    border-radius: 0.9rem;
+    border: none;
+    background-color: #ffffff;
+}
+
+.sketchy-card .card-header {
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
     font-weight: 600;
-    letter-spacing: 0.03em;
 }
 
-footer.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+.sketchy-hero {
+    background: linear-gradient(135deg, #111827, #2563eb);
+    color: #e5e7eb;
+}
+
+.sketchy-hero p {
+    color: #d1d5db;
+}
+
+.navbar-brand span {
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.footer {
+    font-size: 0.8rem;
+}
+
+.btn-primary,
+.btn-success {
+    border-radius: 999px;
+}
+
+.form-control {
+    border-radius: 0.6rem;
 }

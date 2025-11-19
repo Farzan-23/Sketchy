@@ -3,30 +3,37 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col">
-        <h2 class="mb-2">Sketchy – Face Search Workflow</h2>
-        <p class="text-muted mb-0">
-            Sketchy is designed to take a <strong>sketch or photo of a face</strong> and use it as a
-            query to search across <strong>stored photos</strong> and <strong>CCTV/video footage</strong>.
-        </p>
-        <p class="text-muted">
-            This prototype shows the <em>user interface and flow</em>. The AI recognition backend will be plugged in later.
-        </p>
+        <div class="p-4 mb-3 sketchy-hero shadow-sm rounded-3">
+            <h2 class="mb-2">
+                <i class="bi bi-eyeglasses me-2"></i>
+                Sketchy – Forensic Face Search Workflow
+            </h2>
+            <p class="mb-0 text-light-50">
+                Upload a <strong>sketch or photo</strong> of a suspect, then scan your
+                <strong>photo database</strong> and <strong>CCTV footage</strong> for
+                possible matches. This prototype shows the interface and flow;
+                the AI recognition engine is integrated on the backend.
+            </p>
+        </div>
     </div>
 </div>
 
 <div class="row g-4">
     <!-- STEP 1: Upload query face -->
     <div class="col-md-6">
-        <div class="card shadow-sm h-100">
+        <div class="card shadow-sm sketchy-card h-100">
             <div class="card-body">
-                <h5 class="card-title">Step 1 – Upload Sketch / Photo (Query Face)</h5>
+                <h5 class="card-title">
+                    <i class="bi bi-image me-2 text-primary"></i>
+                    Step 1 – Upload Sketch / Photo (Query Face)
+                </h5>
                 <p class="card-text text-muted">
-                    Upload a <strong>facial sketch</strong> or <strong>photo</strong>. Sketchy will treat this
-                    as the <em>query face</em> that you want to search for in:
+                    Upload a <strong>facial sketch</strong> or <strong>photo</strong>.
+                    Sketchy will treat this as the <em>query face</em> to search against:
                 </p>
                 <ul class="text-muted small mb-3">
-                    <li>Existing suspect / reference photo database</li>
-                    <li>CCTV or other recorded video footage</li>
+                    <li>Stored suspect / reference photos</li>
+                    <li>CCTV or other recorded video streams</li>
                 </ul>
 
                 <form action="{{ url_for('search_image') }}" method="post" enctype="multipart/form-data">
@@ -42,26 +49,29 @@
                         >
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
-                        Analyze Query Face (Photos Demo)
+                        <i class="bi bi-search me-1"></i> Analyze Query Face (Photos Demo)
                     </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- STEP 2: Upload CCTV / Video to scan for that face -->
+    <!-- STEP 2: Upload CCTV / Video -->
     <div class="col-md-6">
-        <div class="card shadow-sm h-100" id="video-section">
+        <div class="card shadow-sm sketchy-card h-100" id="video-section">
             <div class="card-body">
-                <h5 class="card-title">Step 2 – Search for This Face in CCTV / Video</h5>
+                <h5 class="card-title">
+                    <i class="bi bi-camera-video me-2 text-success"></i>
+                    Step 2 – Search for This Face in CCTV / Video
+                </h5>
                 <p class="card-text text-muted">
-                    After selecting a query face in Step&nbsp;1, you can upload
-                    <strong>CCTV or video footage</strong>. Sketchy will scan frames to flag
-                    timestamps where the <em>same face</em> appears.
+                    Once you have a query face, upload <strong>CCTV or video footage</strong>.
+                    Sketchy will scan frames and flag timestamps where the same face
+                    is likely to appear.
                 </p>
                 <p class="text-muted small">
-                    In this preview, the system simulates what the results table will look like.
-                    The real backend will use the uploaded sketch/photo to drive this search.
+                    In this preview, the system uses simulated output to show how the
+                    results will be presented.
                 </p>
 
                 <form action="{{ url_for('search_video') }}" method="post" enctype="multipart/form-data">
@@ -77,7 +87,7 @@
                         >
                     </div>
                     <button type="submit" class="btn btn-success w-100">
-                        Scan Video for Query Face (Demo)
+                        <i class="bi bi-graph-up-arrow me-1"></i> Scan Video for Query Face (Demo)
                     </button>
                 </form>
             </div>
